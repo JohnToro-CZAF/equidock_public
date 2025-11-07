@@ -7,9 +7,9 @@ import sys
 
 # deletes all contents of dir and recreates it.
 def create_dir(path):
-  if os.path.exists(path):
-    print('Path ', path, ' already exists. Please delete and restart your job.')
-    sys.exit(1)
+  # if os.path.exists(path):
+  #   print('Path ', path, ' already exists. Please delete and restart your job.')
+  #   sys.exit(1)
   os.makedirs(path, exist_ok=False)
 
 
