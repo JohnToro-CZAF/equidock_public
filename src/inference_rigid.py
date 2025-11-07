@@ -14,7 +14,6 @@ from src.utils.zero_copy_from_numpy import *
 from src.utils.io import create_dir
 
 
-dataset = 'dips'
 method_name = 'equidock'
 remove_clashes = False  # Set to true if you want to remove (most of the) steric clashes. Will increase run time.
 if remove_clashes:
@@ -86,10 +85,10 @@ def get_residues(pdb_filename):
 def main(args):
 
     ## Pre-trained models.
-    if dataset == 'dips':
+    if args['data'] == 'dips':
         checkpoint_filename = 'oct20_Wdec_0.0001#ITS_lw_10.0#Hdim_64#Nlay_8#shrdLay_F#ln_LN#lnX_0#Hnrm_0#NattH_50#skH_0.75#xConnI_0.0#LkySl_0.01#pokOTw_1.0#fine_F#/'
         checkpoint_filename = 'checkpts/' + checkpoint_filename + '/dips_model_best.pth'
-    elif dataset == 'db5':
+    elif args['data'] == 'db5':
         checkpoint_filename = 'oct20_Wdec_0.001#ITS_lw_10.0#Hdim_64#Nlay_5#shrdLay_T#ln_LN#lnX_0#Hnrm_0#NattH_50#skH_0.5#xConnI_0.0#LkySl_0.01#pokOTw_1.0#fine_F#'
         checkpoint_filename = 'checkpts/' + checkpoint_filename + '/db5_model_best.pth'
 
@@ -118,25 +117,32 @@ def main(args):
 
     time_list = []
 
-    input_dir = './test_sets_pdb/' + dataset + '_test_random_transformed/random_transformed/'
-    ground_truth_dir = './test_sets_pdb/' + dataset + '_test_random_transformed/complexes/'
-    output_dir = './test_sets_pdb/' + dataset + '_' + method_name + '_results/'
+    # input_dir = './test_sets_pdb/' + dataset + '_test_random_transformed/random_transformed/'
+    # ground_truth_dir = './test_sets_pdb/' + dataset + '_test_random_transformed/complexes/'
+    # output_dir = './test_sets_pdb/' + dataset + '_' + method_name + '_results/'
 
-    input_dir = './test_sets_pdb/jean/'
-    ground_truth_dir = './test_sets_pdb/jean/'
-    output_dir = './test_sets_pdb/jean_out/'
-    # create_dir(output_dir)
 
-    pdb_files = [f for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f)) and f.endswith('.pdb')]
+    input_dir = args['input_dir']
+    output_dir = args['output_dir']
+    
+    create_dir(output_dir)
+
+    pdb_files = [f for f in os.listdir(input_dir) if os.path.isfile(os.path.join(input_dir, f)) and f.endswith('_ligand.pdb')]
     for file in pdb_files:
+        print(' file = ', file)
+        # Name_ligand.pdb
+        # Name_receptor.pdb
 
-        if not file.endswith('_l_b.pdb'):
+        if not file.endswith('_ligand.pdb'):
             continue
-        ll = len('_l_b.pdb')
-        ligand_filename = os.path.join(input_dir, file[:-ll] + '_l_b' + '.pdb')
-        receptor_filename = os.path.join(ground_truth_dir, file[:-ll] + '_r_b' + '_COMPLEX.pdb')
-        gt_ligand_filename = os.path.join(ground_truth_dir, file[:-ll] + '_l_b' + '_COMPLEX.pdb')
-        out_filename = file[:-ll] + '_l_b' + '_' + method_name.upper() + '.pdb'
+        ll = len('_ligand.pdb')
+        ll_receptor = len('_receptor.pdb')
+        ligand_filename = os.path.join(input_dir, file[:-ll] + '_ligand' + '.pdb') # transformed ligand
+        print(' ligand_filename = ', ligand_filename)
+        receptor_filename = os.path.join(input_dir, file[:-ll] + '_receptor' + '.pdb') # original position of receptor
+        print(' receptor_filename = ', receptor_filename)
+        # gt_ligand_filename = os.path.join(ground_truth_dir, file[:-ll] + '_l_b' + '_COMPLEX.pdb') # original position of ligand
+        out_filename = file[:-ll] + '_ligand' + '_' + method_name.upper() + '.pdb' # output transformed ligand, this when merge to to original receptor to get the final complex
 
         print(' inference on file = ', ligand_filename)
 
@@ -154,9 +160,9 @@ def main(args):
                 return torch.from_numpy(df[df['atom_name'] == 'CA'][['x_coord', 'y_coord', 'z_coord']].to_numpy().squeeze().astype(np.float32))
             return torch.from_numpy(df[['x_coord', 'y_coord', 'z_coord']].to_numpy().squeeze().astype(np.float32))
 
-        gt_ligand_nodes_coors = get_nodes_coors_numpy(gt_ligand_filename, all_atoms=True)
+        # gt_ligand_nodes_coors = get_nodes_coors_numpy(gt_ligand_filename, all_atoms=True)
         gt_receptor_nodes_coors = get_nodes_coors_numpy(receptor_filename, all_atoms=True)
-        initial_ligand_nodes_coors = get_nodes_coors_numpy(ligand_filename, all_atoms=True)
+        # initial_ligand_nodes_coors = get_nodes_coors_numpy(ligand_filename, all_atoms=True)
 
 
 

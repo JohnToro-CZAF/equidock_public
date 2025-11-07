@@ -115,6 +115,8 @@ parser.add_argument('-toy', default=False, action='store_true') ## Train only on
 
 parser.add_argument('-continue_train_model', type=str, default='')
 
+parser.add_argument('-input_dir', type=str, default='./test_sets_pdb/mytest/')
+parser.add_argument('-output_dir', type=str, default='./test_sets_pdb/mytest_out/')
 
 args = parser.parse_args().__dict__
 
